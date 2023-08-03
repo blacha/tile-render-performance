@@ -1,0 +1,1 @@
+Imagery taken from https://basemaps.linz.govt.nz under CCBY 4.0
