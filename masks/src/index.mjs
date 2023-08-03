@@ -33,10 +33,11 @@ async function maskToWebp(mask) {
   for (let i = 0; i < mask.length; i++) {
     const byte = mask[i];
     if (byte === 0) {
-      img[i * 4] = 255;
-      img[i * 4 + 1] = 0;
-      img[i * 4 + 2] = 255;
-      img[i * 4 + 3] = 255;
+      // Magenta!
+      img[i * 4] = 255; // R
+      img[i * 4 + 1] = 0; // G
+      img[i * 4 + 2] = 255; // B
+      img[i * 4 + 3] = 255; // Alpha
     }
   }
   return await sharp(img, { raw: { channels: 4, width: 256, height: 256 } })

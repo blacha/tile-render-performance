@@ -2,7 +2,6 @@
 
 Given a input image create a mask from the alpha channel then convert the mask into a polygon
 
-
 ## Input
 
 ![Input](../input/nz.5-31-19.webp)
