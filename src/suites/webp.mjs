@@ -23,20 +23,5 @@ export const Webp = {
         .webp()
         .toBuffer();
     },
-    'resize 256x256 to 1024x1024 and extract 512x512 and compress to webp ': async () => {
-      return await sharp(Webp256x256)
-        .resize({ width: 1024 })
-        .extract({ left: 512, top: 512, width: 512, height: 512 })
-        .webp()
-        .toBuffer();
-    },
-
-    'resize 256x256 to 1024 and extract 256 and compress to webp_lossless ': async () => {
-      await sharp(Webp256x256)
-        .resize({ width: 1024 })
-        .extract({ left: 512, top: 512, width: 256, height: 256 })
-        .webp({ lossless: true })
-        .toBuffer();
-    },
   },
 };

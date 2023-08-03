@@ -13,9 +13,9 @@ const b = new Bench({ iterations: process.argv.includes('--10') ? 10 : 100 });
 
 const suites = [
   Compression,
-  // Compose,
-  // Float32,
-  // Webp,
+  Compose,
+  Float32,
+  Webp,
   //
 ];
 
@@ -31,7 +31,7 @@ for (const suite of suites) {
 
     if (process.argv.includes('--dump') && ret) {
       await fs.mkdir('./output/' + suite.name, { recursive: true });
-      await fs.writeFile(join('output', suite.name, name + '.webp'), ret);
+      await fs.writeFile(join('output', suite.name, name.includes('.') ? name : name + '.webp'), ret);
     }
     b.add(`${suite.name}: ${name}`, fn);
   }
