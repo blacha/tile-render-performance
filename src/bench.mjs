@@ -2,19 +2,24 @@ import { Bench } from 'tinybench';
 import { Float32 } from './suites/float.mjs';
 import { Webp } from './suites/webp.mjs';
 import { Compose } from './suites/compose.mjs';
+import { Compression } from './suites/compress.mjs';
 import c from 'ansi-colors';
 import fs from 'node:fs/promises';
 import { join } from 'node:path';
 import { markdownTable } from 'markdown-table';
+import { Raw } from './data/raw.mjs';
 
-const b = new Bench({ iterations: process.argv.includes('--100') ? 100 : 100 });
+const b = new Bench({ iterations: process.argv.includes('--10') ? 10 : 100 });
 
 const suites = [
-  Compose,
-  Float32,
-  Webp,
+  Compression,
+  // Compose,
+  // Float32,
+  // Webp,
   //
 ];
+
+await Raw.init();
 
 for (const suite of suites) {
   if (suite.before) await suite.before();

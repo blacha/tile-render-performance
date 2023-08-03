@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { raw256 } from '../data/raw.mjs';
+import { Raw } from '../data/raw.mjs';
 import { Webp256x256 } from '../data/webp.mjs';
 
 async function composite(ext, top, left, raw = false) {
@@ -71,7 +71,7 @@ export const Compose = {
     '256x256 scale 4x 128x128': async () => {
       async function scale(size, top, left) {
         return {
-          input: await raw256().resize(size).raw().toBuffer(),
+          input: await Raw.x256().resize(size).raw().toBuffer(),
           top,
           left,
           raw: {
