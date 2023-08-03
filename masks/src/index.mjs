@@ -33,15 +33,11 @@ async function maskToWebp(mask) {
   for (let i = 0; i < mask.length; i++) {
     const byte = mask[i];
     if (byte === 0) {
-      //   console.log(i);
       img[i * 4] = 255;
       img[i * 4 + 1] = 0;
       img[i * 4 + 2] = 255;
       img[i * 4 + 3] = 255;
-    } else {
-      //   img.push(0, 0, 0, 0);
     }
-    // break;
   }
   return await sharp(img, { raw: { channels: 4, width: 256, height: 256 } })
     .webp()
@@ -63,8 +59,10 @@ async function processTile(tile) {
   const mask = generateMask(buf);
   console.log(tile, { alpha: mask.alpha });
 
-  const webp = await maskToWebp(mask.data);
-  writeFileSync(`./${tile.z}-${tile.x}-${tile.y}.webp`, webp);
+  if (process.argv.includes('--dump')) {
+    const webp = await maskToWebp(mask.data);
+    writeFileSync(`./${tile.z}-${tile.x}-${tile.y}.webp`, webp);
+  }
 }
 
 await processTile({ x: 31, y: 19, z: 5 });
