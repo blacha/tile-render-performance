@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
 import { Webp256x256 } from './webp.mjs';
 
