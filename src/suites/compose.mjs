@@ -1,8 +1,6 @@
-import { readFile } from 'fs/promises';
 import sharp from 'sharp';
-import { Webp256x256 } from '../data/webp.mjs';
-import { writeFileSync } from 'fs';
 import { raw256 } from '../data/raw.mjs';
+import { Webp256x256 } from '../data/webp.mjs';
 
 async function composite(ext, top, left, raw = false) {
   if (raw) {
