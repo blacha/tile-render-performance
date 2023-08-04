@@ -11,3 +11,5 @@ Given a input image create a mask from the alpha channel then convert the mask i
 ![Mask](./output/5-31-19.webp)
 
 ## Polygon
+
+![Polygon](./output/5-31-19-outline.webp)

@@ -75,7 +75,7 @@ function mipmapReduce({ min, max, width, height, scale }) {
   };
 }
 
-class ContourMipmap {
+export class ContourMipmap {
   constructor(raster, width, height) {
     // Bottom mipmap layer is just the raster: at each pixel the minimum and maximum are the same
     this.levels = [{ min: raster, max: raster, width, height, scale: 1 }];
@@ -341,5 +341,3 @@ function smooth(line, { kernelWidth = 2, cycles = 2 }) {
 
   return line;
 }
-
-module.exports = ContourMipmap;
