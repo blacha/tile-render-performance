@@ -1,4 +1,5 @@
 import { SourceFile } from '@chunkd/source-file';
+import { SourceHttp } from '@chunkd/source-http';
 import { writeFileSync } from 'node:fs';
 import { CogTiff, TiffTag } from '@cogeotiff/core';
 import sharp from 'sharp';
@@ -8,10 +9,20 @@ import { ContourMipmap } from './contor.mjs';
 import { basename } from 'node:path';
 
 /**
+ *
+ * @param {string} s
+ * @returns {Source}
+ */
+function getSource(s) {
+  if (s.startsWith('http')) return new SourceHttp(s);
+  return new SourceFile(s);
+}
+
+/**
  * @param {string} path
  */
 async function processTiff(path) {
-  const tiff = await CogTiff.create(new SourceFile(path));
+  const tiff = await CogTiff.create(getSource(path));
 
   const origin = tiff.images[0].origin;
   const epsg = tiff.images[0].epsg;
@@ -22,7 +33,7 @@ async function processTiff(path) {
   const scale = bigImage.resolution[0];
 
   const noData = bigImage.value(TiffTag.GdalNoData);
-  console.log({ path, noData, scale, epsg, tileSize, tileCount });
+  console.log({ path, origin, noData, scale, epsg, tileSize, tileCount });
 
   if (bigImage.tileCount.x !== 1 || bigImage.tileCount.y !== 1) throw new Error('Top image is more than 1x1');
 

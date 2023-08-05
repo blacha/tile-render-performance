@@ -13,6 +13,7 @@
   "dependencies": {
     "@basemaps/geo": "^6.40.0",
     "@chunkd/source-file": "^11.0.0",
+    "@chunkd/source-http": "^11.0.0",
     "@cogeotiff/core": "^8.0.1",
     "ansi-colors": "^4.1.3",
     "markdown-table": "^3.0.3",
