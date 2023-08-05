@@ -171,6 +171,7 @@ export function generateIsolines(interval, tile, extent, buffer) {
   if (!interval) {
     return {};
   }
+  console.log({ extent, buffer, interval });
   let multiplier = extent / (tile.width - 1);
   let tld, trd, bld, brd;
   let r, c;

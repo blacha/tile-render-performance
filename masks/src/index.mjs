@@ -18,14 +18,53 @@ function webMercatorToLatLong(wX, wY) {
   const lat = (Math.PI * 0.5 - 2.0 * Math.atan(Math.exp(-wY / EarthRadius))) * RadToDeg;
   return { lat, lng: (wX * RadToDeg) / EarthRadius };
 }
-
 /**
  * Generate a image mask 0 where image alpha is 0 other wise 1
  *
  * @param {number[]} inp
+ * @param {sharp.OutputInfo} info
  * @returns {{ data: number[], alpha: number, total: number} }
  */
-export function generateMask(inp) {
+export function generateMaskBuffered(inp, info, buffer = 1) {
+  if (info.channels !== 4) throw new Error('need alpha channel');
+  performance.mark('mask:start');
+  const width = info.width + buffer * 2;
+  const height = info.height + buffer * 2;
+  const output = new Uint8Array(width * height);
+  let alphaCount = 0;
+  let total = 0;
+
+  for (let y = 0; y < info.height + buffer; y++) {
+    for (let x = 0; x < info.width + buffer; x++) {
+      const sourceX = x - buffer;
+      const sourceY = y - buffer;
+      if (sourceX < 0 || sourceY < 0) continue;
+      if (sourceX >= info.width) continue;
+      if (sourceY >= info.height) continue;
+
+      // console.log(sourceX, sourceY,  * 4 + 3);
+
+      const index = sourceY * info.width + sourceX;
+      const source = inp[index * 4 + 3];
+      if (source !== 0) output[y * width + x] = 1;
+      else alphaCount++;
+    }
+    // if (y > 1) break;
+  }
+
+  performance.mark('mask:end');
+  return { data: output, alpha: alphaCount, total };
+}
+/**
+ * Generate a image mask 0 where image alpha is 0 other wise 1
+ *
+ * @param {number[]} inp
+ * @param {sharp.OutputInfo} info
+ * @returns {{ data: number[], alpha: number, total: number} }
+ */
+export function generateMask(inp, info) {
+  if (info.channels !== 4) throw new Error('need alpha channel');
+  performance.mark('mask:start');
   const output = [];
   let alphaCount = 0;
   let total = 0;
@@ -38,14 +77,17 @@ export function generateMask(inp) {
       alphaCount++;
     } else output.push(1);
   }
+  performance.mark('mask:end');
   return { data: output, alpha: alphaCount, total };
 }
 
 /**
  * Convert the mask into a webp image
  * @param {number[]} mask
+ * @param {sharp.OutputInfo} info
  */
-async function maskToWebp(mask) {
+export async function maskToWebp(mask, info) {
+  performance.mark('webp:start');
   const img = Buffer.alloc(mask.length * 4);
   for (let i = 0; i < mask.length; i++) {
     const byte = mask[i];
@@ -57,9 +99,14 @@ async function maskToWebp(mask) {
       img[i * 4 + 3] = 255; // Alpha
     }
   }
-  return await sharp(img, { raw: { channels: 4, width: 256, height: 256 } })
+  performance.mark('webp:image:end');
+
+  const buf = await sharp(img, { raw: { channels: 4, width: info.width, height: info.height } })
     .webp()
     .toBuffer();
+
+  performance.mark('webp:end');
+  return buf;
 }
 
 /**
@@ -67,23 +114,24 @@ async function maskToWebp(mask) {
  * @param {number[]} data
  */
 function fromIsoLine(tile, data) {
-  console.time('isolines');
+  performance.mark('isoline:start');
   const lines = generateIsolines(
     0.5,
     {
       get(x, y) {
-        return data[y * 256 + x] ?? -1;
+        return data[y * 256 + x] ?? 1;
       },
       width: 256,
       height: 256,
     },
     256,
   );
-  console.timeEnd('isolines');
+  performance.mark('isoline:end');
 
   const origin = GoogleTms.tileToSource(tile);
   const scale = GoogleTms.pixelScale(tile.z);
 
+  performance.mark('geojson:start');
   const features = lines[0.5].map((coords) => {
     const output = [];
 
@@ -102,6 +150,8 @@ function fromIsoLine(tile, data) {
       properties: {},
     };
   });
+  performance.mark('geojson:end');
+
   if (process.argv.includes('--dump')) {
     writeFileSync(
       `./${tile.z}-${tile.x}-${tile.y}.geojson`,
@@ -160,9 +210,11 @@ async function processTile(tile) {
   const data = readFileSync(new URL(`../../input/nz.${tile.z}-${tile.x}-${tile.y}.webp`, import.meta.url));
 
   /** Convert to a raw RGBA buffer */
-  const buf = await sharp(data).raw().toBuffer();
+  performance.mark('image:start');
+  const buf = await sharp(data).raw().toBuffer({ resolveWithObject: true });
+  performance.mark('image:end');
 
-  const mask = generateMask(buf);
+  const mask = generateMask(buf.data, buf.info);
   console.log(tile, { alpha: mask.alpha });
 
   if (process.argv.includes('--dump')) {
@@ -171,7 +223,16 @@ async function processTile(tile) {
   }
 
   fromIsoLine(tile, mask.data);
-}
 
-await processTile({ x: 31, y: 19, z: 5 });
-await processTile({ x: 126, y: 79, z: 7 });
+  const metrics = [
+    performance.measure('image', 'image:start', 'image:end'),
+    performance.measure('mask', 'mask:start', 'mask:end'),
+    performance.measure('webp', 'webp:start', 'webp:end'),
+    performance.measure('isoline', 'isoline:start', 'isoline:end'),
+    performance.measure('geojson', 'geojson:start', 'geojson:end'),
+  ];
+
+  //   performance.measure;
+  console.log('performance:');
+  metrics.forEach((m) => m && console.log('  ', m.name, Number(m.duration.toFixed(3), 'ms')));
+}

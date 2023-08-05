@@ -12,9 +12,9 @@ import { Raw } from './data/raw.mjs';
 const b = new Bench({ iterations: process.argv.includes('--10') ? 10 : 100 });
 
 const suites = [
-  Compression,
-  Compose,
-  Float32,
+  // Compression,
+  // Compose,
+  // Float32,
   Webp,
   //
 ];

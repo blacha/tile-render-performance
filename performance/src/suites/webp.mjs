@@ -16,6 +16,14 @@ export const Webp = {
         .toBuffer();
     },
 
+    'resize 256x256 to 1024x1024 and extract 256x256 obj': async () => {
+      await sharp(Webp256x256)
+        .resize({ width: 1024 })
+        .extract({ left: 512, top: 512, width: 256, height: 256 })
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+    },
+
     'resize 256x256 to 1024 and extract 256 and compress to webp ': async () => {
       return await sharp(Webp256x256)
         .resize({ width: 1024 })
